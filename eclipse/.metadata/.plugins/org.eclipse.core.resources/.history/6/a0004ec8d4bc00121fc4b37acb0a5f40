@@ -1,0 +1,8 @@
+package aufgabe3.philosophers;
+
+public class Fork {
+	
+	private Seat rightSeat;
+	private Seat leftSeat;
+
+}

@@ -1,0 +1,100 @@
+package aufgabe3.philosophers;
+
+public class Philosopher extends Thread {
+	
+	private Seat seat;
+	private int mediationTime = 500; //ms
+	private int eatingTime = 250; //ms
+	private long timeOfLastAction = System.currentTimeMillis();
+
+	public Seat removeFromSeat() {
+		final Seat oldSeat;
+		
+		synchronized(this) {
+			oldSeat = this.seat;
+			
+			if (oldSeat != null) { //we may not have a seat at this time. this may be a race condition.
+				this.seat.setPhil(null);
+				this.seat = null;
+				
+				this.timeOfLastAction = System.currentTimeMillis();
+			}
+		}
+		
+		return oldSeat;
+	}
+	
+	public boolean assignSeat(final Seat newSeat) {
+		
+		boolean success;
+		
+		/**
+		 * Actually synchronization is not necessary here since every philosopher will have its own philosopher thread.
+		 * Hence this method will only be executed from a single thread.
+		 * Synchronization would only be necessary at this point if a situation could occur where a Philosopher is seated from more than one thread simultaneously.
+		 */
+		synchronized(this) {
+			
+			if (this.seat != null) { //we are already seated. we may have entered a race condition here.
+				success = false;
+			}
+			else {
+				success = newSeat.setPhil(this);
+				
+				if (success) {
+					this.seat = newSeat;
+					this.timeOfLastAction = System.currentTimeMillis();
+				}
+			}
+		}
+		
+		return success;
+	}
+	
+	public int getMediationTime() {
+		return mediationTime;
+	}
+
+
+	public void setMediationTime(int mediationTime) {
+		this.mediationTime = mediationTime;
+	}
+
+
+	public int getEatingTime() {
+		return eatingTime;
+	}
+
+
+	public void setEatingTime(int eatingTime) {
+		this.eatingTime = eatingTime;
+	}
+	
+	public boolean isEating() {
+		return this.seat != null;
+	}
+	
+	public boolean isMediating() {
+		return this.seat == null;
+	}
+	
+	/**
+	 * Have me mediated for to long?
+	 * @return
+	 */
+	public boolean isHungry() {
+		return this.isMediating() && this.timeOfLastAction > this.getMediationTime();
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isSaturated() {
+		return this.isEating() && this.timeOfLastAction > this.getEatingTime();
+	}
+	
+	public int timeSinceLastAction() {
+		return (int) (System.currentTimeMillis() - this.timeOfLastAction);
+	}
+}

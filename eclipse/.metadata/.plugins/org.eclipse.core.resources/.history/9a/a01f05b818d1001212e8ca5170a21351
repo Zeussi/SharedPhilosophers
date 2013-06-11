@@ -1,0 +1,19 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.rmi.Remote;
+
+public interface PhilWorkerRMIInterface extends Remote {
+
+	/**
+	 * This methods have to be called by the PhilWorkers at the beginning / end of the "work".
+	 * 
+	 * Caution: It does not suffice to call these methods from the worker!
+	 * It has to register a stub that implements PhilWorkerRMIInterface with the java RMI registry in the following manner:
+	 * registry.bind("worker_address", stub);
+	 * 
+	 * @param address Network address of the worker
+	 */
+	public void registerWorker(final String address);
+	public void unregisterWorker(final String address);
+	
+}

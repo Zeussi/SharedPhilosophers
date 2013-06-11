@@ -1,0 +1,33 @@
+package aufgabe4.models;
+
+import java.rmi.Remote;
+
+public abstract class AbstractRemoteObject implements Remote {
+	
+	/**
+	 * object ID has to be unique amount all objects
+	 */
+	private final int objectID;
+	private static int nextObjectID = 0;
+
+	public AbstractRemoteObject() {
+		objectID = AbstractRemoteObject.generateNextObjectID();
+	}
+	
+	public AbstractRemoteObject(int objectID) {
+		this.objectID = objectID;
+	}
+	
+	public int getObjectID() {
+		return objectID;
+	}
+
+	private static int generateNextObjectID() {
+		int retVal;
+		synchronized(AbstractRemoteObject.class) {
+			retVal = nextObjectID;
+			nextObjectID++;
+		}
+		return retVal;
+	}
+}

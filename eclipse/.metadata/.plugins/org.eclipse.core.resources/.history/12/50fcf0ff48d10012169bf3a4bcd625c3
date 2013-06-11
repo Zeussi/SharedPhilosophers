@@ -1,0 +1,7 @@
+package aufgabe4.models;
+
+
+public interface RemoteForkIF extends AbstractRemoteObjectIF {
+
+	
+}

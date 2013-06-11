@@ -1,0 +1,12 @@
+{
+  "/Library/Java/JavaVirtualMachines/1.6.0_29-b11-402.jdk/Contents/Classes/classes.jar": {
+    "coordinate": "jre:jre:zip:ovrm:1.0.0",
+    "location": "/Library/Java/JavaVirtualMachines/1.6.0_29-b11-402.jdk/Contents/Classes/classes.jar",
+    "status": "RESOLVED"
+  },
+  "/Users/Tobi/Desktop/Verteilte Systeme/eclipse/VSS/src": {
+    "location": "/Users/Tobi/Desktop/Verteilte Systeme/eclipse/VSS/src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027/Users/Tobi/Desktop/Verteilte Systeme/eclipse/VSS/src\u0027. Skipped."
+  }
+}

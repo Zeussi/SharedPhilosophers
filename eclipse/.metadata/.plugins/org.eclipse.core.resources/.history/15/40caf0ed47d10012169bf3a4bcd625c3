@@ -1,0 +1,8 @@
+package aufgabe4.models;
+
+import java.rmi.Remote;
+
+public interface RemoteForkIF extends AbstractRemoteObjectIF {
+
+	
+}

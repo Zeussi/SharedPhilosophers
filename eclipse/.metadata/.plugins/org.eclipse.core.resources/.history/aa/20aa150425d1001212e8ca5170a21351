@@ -1,0 +1,9 @@
+package aufgabe4.models;
+
+public class RemoteForm extends AbstractRemoteObject {
+
+	public RemoteForm() {
+		// TODO Auto-generated constructor stub
+	}
+
+}

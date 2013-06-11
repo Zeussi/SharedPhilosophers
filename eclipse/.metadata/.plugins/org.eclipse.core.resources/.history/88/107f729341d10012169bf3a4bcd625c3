@@ -1,0 +1,14 @@
+package aufgabe4.PhilosopherWorker;
+
+public class RemoteObjectCache {
+
+	public RemoteObjectCache() {
+		
+	}
+	
+	pub
+
+	public void saveObjectToCache(final AbstractRemoteObject obj) {
+		
+	}
+}

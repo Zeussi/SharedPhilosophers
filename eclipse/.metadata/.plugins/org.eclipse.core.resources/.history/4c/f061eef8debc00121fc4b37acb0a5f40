@@ -1,0 +1,81 @@
+package aufgabe3.philosophers;
+
+public class Seat {
+
+	private Fork rightFork;
+	private Fork leftFork;
+	private Philosopher phil;
+	
+	public boolean canBeTaken() {
+		return this.rightFork.isFree() && this.leftFork.isFree();
+	}
+	
+	public boolean isTaken() {
+		return this.phil != null;
+	}
+
+	protected boolean setPhil(final Philosopher phil) {
+		boolean success;
+		
+		synchronized(this) {
+			if (phil == null) { //reset will always work
+				this.phil = phil;
+				success = true;
+			}
+			else if (phil == null && this.phil == null) {
+				this.phil = phil;
+				success = true;
+			}
+			else {
+				success = false;
+			}
+		}
+		
+		return success;
+	}
+
+	public Fork getRightFork() {
+		return rightFork;
+	}
+	
+	public Fork getLeftFork() {
+		return leftFork;
+	}
+
+	public void setRightFork(Fork rightFork) {
+		if (this.rightFork != null)
+			this.rightFork.setLeftSeatSimple(null);
+		
+		rightFork.setLeftSeatSimple(this);
+		this.setRightForkSimple(rightFork);
+	}
+	
+	public void setLeftFork(Fork leftFork) {
+		if (this.leftFork != null)
+			this.leftFork.setRightSeatSimple(null);
+		
+		leftFork.setRightSeatSimple(this);
+		this.setLeftForkSimple(leftFork);
+	}
+
+	protected void setRightForkSimple(Fork rightFork) {
+		this.rightFork = rightFork;
+	}
+	
+	protected void setLeftForkSimple(Fork leftFork) {
+		this.leftFork = leftFork;
+	}
+	
+
+	public Philosopher getPhil() {
+		return phil;
+	}
+	
+	public Seat righthandSeat() {
+		return this.rightFork.getRightSeat();
+	}
+	
+	public Seat lefthandSeat() {
+		return this.leftFork.getLeftSeat();
+	}
+}

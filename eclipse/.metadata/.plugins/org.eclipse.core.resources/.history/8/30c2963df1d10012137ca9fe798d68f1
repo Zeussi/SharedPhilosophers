@@ -1,0 +1,144 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import javax.management.RuntimeErrorException;
+import aufgabe4.models.RemotePhilosopher;
+import aufgabe4.models.RemotePhilosopherIF;
+import aufgabe4.models.RemoteSeatIF;
+
+
+public class PhilController {
+	
+	private final ArrayList<Integer> table; //table == array of seatIDs
+	private final HashSet<PhilRunner> philosopherRunners;
+//	private TableMaster tableMaster;
+
+	
+	public PhilController(final Collection<RemotePhilosopherIF> philosophers, final ArrayList<Integer> table) throws RemoteException {
+		super();
+		
+		if (philosophers == null || philosophers.isEmpty())
+			throw new RuntimeErrorException(null, "You have to initialize the PhilosopherController with philosophers.");
+		else if (table == null || table.isEmpty())
+			throw new RuntimeErrorException(null, "You have to initialize the PhilosopherController with a nonempty table.");
+		
+		this.table = table;
+		this.philosopherRunners = new HashSet<PhilRunner>(philosophers.size());
+		
+		//create a philosopher runner for each philosopher
+		for (final RemotePhilosopherIF phil : philosophers)
+			philosopherRunners.add(new PhilRunner(phil.getObjectID(), this));
+		
+	}
+	
+	/**
+	 * WARNING: This method can only be called once!
+	 */
+	public void startPhilosophers() {
+		System.out.println("Running Philosophers...");
+		
+		for (final PhilRunner runner : philosopherRunners)
+			runner.start();
+	}
+
+	/**
+	 * WARNING: This method can only be called once!
+	 */
+	public void stopPhilosophers() {
+		System.out.println("Stopping Philosophers...");
+		
+		this.stopTableMaster();
+		
+		for (final PhilRunner runner : philosopherRunners)
+			runner.killPhilosopher();
+	}
+	
+	public void startTableMaster(final int maxDiningDifference) {
+	/*	if (this.tableMaster != null)
+			this.stopTableMaster();
+		
+		this.tableMaster = new TableMaster(this);
+		if (maxDiningDifference >= 5)		
+			tableMaster.setMaxDiningDifference(maxDiningDifference);
+		this.tableMaster.start();
+		*/
+	}
+	
+	public void stopTableMaster() {
+		/*
+		this.tableMaster.suicide();
+		this.tableMaster = null;
+		*/
+	}
+	
+	/**
+	 * Seat or queue a philosopher on a seat.
+	 * @param phil
+	 * @return
+	 * @throws RemoteException 
+	 */
+	public boolean seatOrQueuePhilosopher(final RemotePhilosopherIF phil) throws RemoteException {
+		boolean success = false;
+		
+		/**
+		 * We do NOT synchronize here. this works beacause the seats array will never be modified.
+		 * Synchronisation is done in the Philosopher and Seat class.
+		 */
+		for (final Integer seatID : table) {
+			final RemoteSeatIF seat = (RemoteSeatIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(seatID);
+			if (seat.canBeTaken()) {
+				success = phil.assignSeat(seat);
+				
+				if (success)
+					break;
+			}
+		}
+		
+		/**
+		 * if we could not seat the philosoper currently, we will try to queue it on a seat.
+		 */
+		if (!success) {
+			
+			/**
+			 * we search for the seat with the smallest waiting queue and try to queue the philosopher there
+			 */
+			RemoteSeatIF seatWithSmallestWaitingQueue = (RemoteSeatIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(table.get(0));
+			for (final Integer seatID : table) {
+				final RemoteSeatIF seat = (RemoteSeatIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(seatID);
+				if (!seat.isPhilosopherWaitingQueueFull() && seat.getNumberOfPhilosophersWaiting() < seatWithSmallestWaitingQueue.getNumberOfPhilosophersWaiting()) {
+					seatWithSmallestWaitingQueue = seat;
+				}
+			}
+			
+			//did we find a seat where our phil can be queued?
+			if (!seatWithSmallestWaitingQueue.isPhilosopherWaitingQueueFull()) {
+				if (seatWithSmallestWaitingQueue.canBeTaken()) { //try to seat our phil again
+					success = phil.assignSeat(seatWithSmallestWaitingQueue);
+				}
+				//we couldnt seat the philosopher -> put him on the waiting queue
+				if (!success) {
+					success = phil.queueOnSeat(seatWithSmallestWaitingQueue);
+				}
+			}
+		}
+		
+		return success;
+	}
+	/*
+	public HashSet<Philosopher> getPhilosopers() {
+		HashSet<Philosopher> phils = new HashSet<Philosopher>(this.philosopherRunners.size());
+		
+		for (final PhilosopherRunner runner : philosopherRunners)
+			if (runner.isAlive())
+				phils.add(runner.getPhil());
+		
+		return phils;
+	}
+	*/
+	public void takeSeatFromPhilosopher(final Philosopher phil) {
+		phil.removeFromSeat();
+	}
+}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename method &apos;aufgabe3.philosophers.control.PhilosopherController.seatPhilosopher(...)&apos; to &apos;seatOrQueuePhilosopher&apos;&#x0A;- Original project: &apos;VSS&apos;&#x0A;- Original element: &apos;aufgabe3.philosophers.control.PhilosopherController.seatPhilosopher(...)&apos;&#x0A;- Renamed element: &apos;aufgabe3.philosophers.control.PhilosopherController.seatOrQueuePhilosopher(...)&apos;&#x0A;- Update references to refactored element" delegate="false" deprecate="false" description="Rename method &apos;seatPhilosopher&apos;" flags="589830" id="org.eclipse.jdt.ui.rename.method" input="/src&lt;aufgabe3.philosophers.control{PhilosopherController.java[PhilosopherController~seatPhilosopher~QPhilosopher;" name="seatOrQueuePhilosopher" references="true" stamp="1369746228837" version="1.0"/>
+</session>

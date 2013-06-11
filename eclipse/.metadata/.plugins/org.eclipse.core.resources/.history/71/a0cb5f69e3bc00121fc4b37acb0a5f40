@@ -1,0 +1,57 @@
+package aufgabe3.philosophers.control;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+
+import javax.management.RuntimeErrorException;
+
+import aufgabe3.philosophers.*;
+
+public class PhilosopherController {
+	
+	private final ArrayList<Seat> table;
+	private final HashSet<PhilosopherRunner> philosopherRunners;
+	
+	
+	public PhilosopherController(final Collection<Philosopher> philosophers, final ArrayList<Seat> table) {
+		super();
+		
+		if (philosophers == null || philosophers.isEmpty())
+			throw new RuntimeErrorException(null, "You have to initialize the PhilosopherController with philosophers.");
+		else if (table == null || table.isEmpty())
+			throw new RuntimeErrorException(null, "You have to initialize the PhilosopherController with a nonempty table.");
+		
+		this.table = table;
+		this.philosopherRunners = new HashSet<PhilosopherRunner>(philosophers.size());
+		
+		//create a philosopher runner for each philosopher
+		for (Philosopher phil : philosophers) {
+			PhilosopherRunner newRunner = new PhilosopherRunner(phil, this);
+		}
+	}
+
+	
+	public boolean seatPhilosopher(final Philosopher phil) {
+		boolean success = false;
+		
+		/**
+		 * We do NOT synchronize here. this works beacause the seats array will never be modified.
+		 * Synchronisation is done in the Philosopher and Seat class.
+		 */
+		for (final Seat seat : table) {
+			if (seat.canBeTaken()) {
+				success = phil.assignSeat(seat);
+				
+				if (success)
+					break;
+			}
+		}
+		
+		return success;
+	}
+	
+	public void takeSeatFromPhilosopher(final Philosopher phil) {
+		phil.removeFromSeat();
+	}
+}

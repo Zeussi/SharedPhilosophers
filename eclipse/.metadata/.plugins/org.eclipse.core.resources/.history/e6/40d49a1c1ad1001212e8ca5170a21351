@@ -1,0 +1,14 @@
+package aufgabe4.models;
+
+import java.rmi.Remote;
+
+public abstract class AbstractRemoteObject implements Remote {
+	
+	private final int objectID;
+	private static int nextObjectID = 1;
+
+	public AbstractRemoteObject() {
+		
+	}
+
+}

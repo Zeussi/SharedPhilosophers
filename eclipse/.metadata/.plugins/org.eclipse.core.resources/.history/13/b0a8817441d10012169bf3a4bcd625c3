@@ -1,0 +1,9 @@
+package aufgabe4.PhilosopherWorker;
+
+public class RemoteObjectCache {
+
+	public RemoteObjectCache() {
+		// TODO Auto-generated constructor stub
+	}
+
+}

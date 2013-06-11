@@ -1,0 +1,25 @@
+package aufgabe3;
+
+public final class Aufgabe3 {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		
+		if (args.length == 2) {
+		    try {
+		        firstArg = Integer.parseInt(args[0]);
+		    } catch (NumberFormatException e) {
+		        System.err.println("Argument" + " must be an integer");
+		        System.exit(1);
+		    }
+		}
+		else {
+			System.err.println("Must either have 0 or 2 arguments. If the latter is the case, the first argument is the number of Philosophers and the second the number of seats on the table.\nExiting.");
+			exit();
+		}
+	}
+
+}

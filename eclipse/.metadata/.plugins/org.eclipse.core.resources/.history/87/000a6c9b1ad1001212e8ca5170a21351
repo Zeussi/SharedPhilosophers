@@ -1,0 +1,28 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.lang.reflect.Array;
+import java.rmi.Remote;
+import aufgabe4.models.AbstractRemoteObject;
+
+/**
+ * This interface is used by the master to control the worker.
+ *
+ */
+public interface PhilWorkerRMIInterface extends Remote {
+
+	/**
+	 * Will always return true. Obviously.
+	 * @return true
+	 */
+	public boolean isReachable();
+	
+	/**
+	 * This methods are used by the master to assign/remove a seat/fork/phil to/from this worker
+	 * 
+	 * @param fork/seat/phil
+	 */
+	public void addRemoteObject(final AbstractRemoteObject obj);
+	public void takeRemoteObject(final AbstractRemoteObject obj);
+	
+	public void updateCacheForObjects(final Collection<AbstractRemoteObject> objects);
+}

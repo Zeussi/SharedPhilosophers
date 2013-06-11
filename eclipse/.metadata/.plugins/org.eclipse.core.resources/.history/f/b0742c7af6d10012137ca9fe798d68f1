@@ -1,0 +1,186 @@
+package aufgabe4.master;
+
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+
+import aufgabe4.models.*;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import aufgabe4.PhilosopherWorker.PhilWorkerRMIInterface;
+
+/**
+ * This program maintains a list of all computers in the network which work with philosophers.
+ * It will also provide the Java RMI registry.
+ * 
+ * This class is a singleton.
+ * 
+ *
+ */
+public class Master implements MasterRMIInterface {
+	
+	private static Master masterInstance;
+	
+	private Registry registry;
+	/**
+	 * We keep the worker network addresses to lookup their remote stubs (PhilWorkerRMIInterface) with the address.
+	 */
+	private final ArrayList<String> workerAddresses = new ArrayList<String>();
+	/**
+	 * key: AbstractRemoteObject: fork/seat/phil
+	 * value: worker address
+	 */
+	private final HashMap<AbstractRemoteObject, String> allObjects = new HashMap<AbstractRemoteObject, String>();
+
+	private Master() throws RemoteException {
+		registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+	}
+	
+	public static Master getMasterInstace() {
+		if (masterInstance == null) {
+			try {
+				masterInstance = new Master();
+			} catch (RemoteException e) {
+				masterInstance = null;
+				e.printStackTrace();
+			}
+		}
+		return masterInstance;
+	}
+
+	/**
+	 * Here we set up the RMI stuff: registry and the MasterRMIInterface.
+	 * This method also sets up the timer which checks the reachability of the workers from time to time
+	 * 
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		final Master master = Master.getMasterInstace();
+		if (master == null)
+			System.exit(-1);
+		
+		MasterRMIInterface masterStub;
+		try {
+			masterStub = (MasterRMIInterface) UnicastRemoteObject.exportObject(master, 0);
+			master.registry.bind("master", masterStub);
+			System.out.println("Master successfully registered.");
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		} catch (AlreadyBoundException e) {
+			// this cannot happen
+			e.printStackTrace();
+		}
+		
+		//schedule the reachability check every 2 minutes
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				master.checkWorkers();
+			}
+		}, 2*60*1000);
+	}
+	
+	/**
+	 * This method goes through all workers and checks their reachability
+	 */
+	public void checkWorkers() {
+		ArrayList<String> nonreachableWorkers = new ArrayList<String>();
+		
+		synchronized(workerAddresses) {
+			for (final String currentAddress : workerAddresses) {
+				boolean workerReachable;
+				try {
+					PhilWorkerRMIInterface workerStub = this.getWorkerWithAddress(currentAddress);
+					workerReachable = workerStub.isReachable();
+				} catch (Exception e) {
+					workerReachable = false;
+					System.err.println("Worker with address " + currentAddress +" not reachable anymore.");
+				}
+				if (!workerReachable)
+					nonreachableWorkers.add(currentAddress);
+			}
+		}
+		
+		System.out.println(nonreachableWorkers.size() == 0 ? "All workers are reachable from the Master." : ("Found " + nonreachableWorkers.size() + " nonreachable workers."));
+		
+		//unregister every worker that is not reachable anymore
+		for (final String currentAddress : workerAddresses) {
+			this.workerWithAddressIsNotReachable(currentAddress);
+		}
+	}
+	
+	public void workerWithAddressIsNotReachable(final String address) {
+		// TODO: Do stuff if the worker is not reachable anymore
+		this.unregisterWorker(address);
+		Collection<AbstractRemoteObject> objects = this.getObjectsForWorkerWithAddress(address);
+	}
+	
+	public Collection<AbstractRemoteObject> getObjectsForWorkerWithAddress(final String address) {
+		Collection<AbstractRemoteObject> retVal = new HashSet<AbstractRemoteObject>();
+		synchronized(this.allObjects) {
+			Set<AbstractRemoteObject> objects = this.allObjects.keySet();
+			for (AbstractRemoteObject currentObject : objects) {
+				String currentAddress = this.allObjects.get(currentObject);
+				if (currentAddress.equalsIgnoreCase(address)) {
+					retVal.add(currentObject);
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	public String getWorkerAddressForObjectWithID(final int objID) {
+		String retVal = null;
+		synchronized(this.allObjects) {
+			Set<AbstractRemoteObject> objects = this.allObjects.keySet();
+			for (AbstractRemoteObject currentObject : objects) {
+				if (currentObject.getObjectID() == objID) {
+					retVal = this.allObjects.get(currentObject);
+					break;
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	public PhilWorkerRMIInterface getWorkerWithAddress(final String address) {
+		try {
+			return (PhilWorkerRMIInterface) registry.lookup(address);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public void registerWorker(String address) {
+		synchronized(workerAddresses) {
+			workerAddresses.add(address);
+		}
+	}
+
+	@Override
+	public void unregisterWorker(String address) {
+		synchronized(workerAddresses) {
+			workerAddresses.remove(address);
+		}
+	}
+
+	@Override
+	public ArrayList<Integer> getTable() throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+}

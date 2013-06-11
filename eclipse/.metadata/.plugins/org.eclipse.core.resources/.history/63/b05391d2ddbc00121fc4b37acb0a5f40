@@ -1,0 +1,45 @@
+package aufgabe3.philosophers.control;
+
+import aufgabe3.philosophers.Philosopher;
+
+public class PhilosopherRunner extends Thread {
+	
+	private final Philosopher phil;
+	private final PhilosopherController philController;
+	
+
+	public PhilosopherRunner(final Philosopher phil, final PhilosopherController philController) {
+		super();
+		assert(phil != null && philController != null);
+		
+		this.philController = philController;
+		this.phil = phil;
+	}
+	
+	
+	public void run() {
+		
+		while (this.isAlive()) {
+			
+			if (this.phil.isHungry()) { //try taking a seat on the table
+				boolean success = this.philController.seatPhilosopher(this.phil);
+			}
+			else if (this.phil.isSaturated()) { //go to the mediation room if our phil has finished eating
+				this.philController.takeSeatFromPhilosopher(this.phil);
+				System.out.println("Took seat from Philosopher: " + this.phil)
+			}
+			else { //nothing to do
+				yield();
+			}
+			
+		}
+	}
+	
+
+	public Philosopher getPhil() {
+		return phil;
+	}
+
+
+	
+}

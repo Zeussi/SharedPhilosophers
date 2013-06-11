@@ -1,0 +1,17 @@
+package aufgabe4.models;
+
+import java.rmi.RemoteException;
+
+import aufgabe4.PhilosopherWorker.PhilWorker;
+
+
+public interface RemoteForkIF extends AbstractRemoteObjectIF {
+
+	public RemoteSeatIF getRightSeat();
+	public RemoteSeatIF getLeftSeat();
+	public void setLeftSeat(final RemoteSeatIF leftSeat);
+	public void setRightSeat(final RemoteSeatIF rightSeat);
+	public boolean isTaken();
+	public boolean isFree();
+	public String toString();
+}

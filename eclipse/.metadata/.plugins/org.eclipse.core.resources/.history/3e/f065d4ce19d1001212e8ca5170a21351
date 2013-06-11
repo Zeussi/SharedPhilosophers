@@ -1,0 +1,11 @@
+package aufgabe4.models;
+
+public class RemotePhilosopher extends AbstractRemoteObject {
+	
+	private final objectID;
+
+	public RemotePhilosopher() {
+		// TODO Auto-generated constructor stub
+	}
+
+}

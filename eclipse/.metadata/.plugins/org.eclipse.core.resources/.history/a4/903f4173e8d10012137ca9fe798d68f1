@@ -1,0 +1,9 @@
+package aufgabe4.PhilosopherWorker;
+
+public class PhilController {
+
+	public PhilController() {
+		// TODO Auto-generated constructor stub
+	}
+
+}

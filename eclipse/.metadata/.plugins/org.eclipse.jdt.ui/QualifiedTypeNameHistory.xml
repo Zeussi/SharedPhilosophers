@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="java.util.LinkedList"/>
+<fullyQualifiedTypeName name="java.io.Console"/>
+<fullyQualifiedTypeName name="aufgabe3.philosophers.Seat"/>
+<fullyQualifiedTypeName name="java.io.BufferedReader"/>
+<fullyQualifiedTypeName name="java.io.InputStreamReader"/>
+<fullyQualifiedTypeName name="java.util.Random"/>
+<fullyQualifiedTypeName name="aufgabe3.philosophers.control.PhilosopherController"/>
+<fullyQualifiedTypeName name="javax.management.RuntimeErrorException"/>
+<fullyQualifiedTypeName name="aufgabe3.philosophers.control.TableMaster"/>
+<fullyQualifiedTypeName name="java.util.Queue"/>
+<fullyQualifiedTypeName name="aufgabe3.philosophers.Philosopher"/>
+<fullyQualifiedTypeName name="java.util.concurrent.ArrayBlockingQueue"/>
+<fullyQualifiedTypeName name="java.lang.reflect.Array"/>
+<fullyQualifiedTypeName name="java.rmi.registry.Registry"/>
+<fullyQualifiedTypeName name="aufgabe4.master.MasterRMIInterface"/>
+<fullyQualifiedTypeName name="java.rmi.server.UnicastRemoteObject"/>
+<fullyQualifiedTypeName name="java.util.Timer"/>
+<fullyQualifiedTypeName name="java.util.TimerTask"/>
+<fullyQualifiedTypeName name="java.net.NetworkInterface"/>
+<fullyQualifiedTypeName name="java.util.Enumeration"/>
+<fullyQualifiedTypeName name="java.net.InterfaceAddress"/>
+<fullyQualifiedTypeName name="java.net.Inet4Address"/>
+<fullyQualifiedTypeName name="aufgabe4.PhilosopherWorker.RemoteObjectCache"/>
+<fullyQualifiedTypeName name="java.rmi.registry.LocateRegistry"/>
+<fullyQualifiedTypeName name="aufgabe4.models.RemoteForkIF"/>
+<fullyQualifiedTypeName name="java.rmi.RemoteException"/>
+<fullyQualifiedTypeName name="java.util.Map"/>
+<fullyQualifiedTypeName name="java.util.Iterator"/>
+<fullyQualifiedTypeName name="aufgabe4.models.AbstractRemoteObjectIF"/>
+<fullyQualifiedTypeName name="aufgabe3.philosophers.control.PhilosopherRunner"/>
+<fullyQualifiedTypeName name="aufgabe4.models.RemotePhilosopher"/>
+<fullyQualifiedTypeName name="aufgabe4.models.AbstractRemoteObject"/>
+<fullyQualifiedTypeName name="aufgabe4.models.RemoteObjectType"/>
+<fullyQualifiedTypeName name="aufgabe4.PhilosopherWorker.PhilController"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="aufgabe4.models.RemoteSeatIF"/>
+<fullyQualifiedTypeName name="aufgabe4.models.RemotePhilosopherIF"/>
+<fullyQualifiedTypeName name="aufgabe4.PhilosopherWorker.PhilWorker"/>
+<fullyQualifiedTypeName name="java.util.HashMap"/>
+<fullyQualifiedTypeName name="java.util.Collection"/>
+<fullyQualifiedTypeName name="java.util.Set"/>
+<fullyQualifiedTypeName name="java.util.HashSet"/>
+<fullyQualifiedTypeName name="aufgabe4.PhilosopherWorker.PhilWorkerRMIInterface"/>
+</qualifiedTypeNameHistroy>

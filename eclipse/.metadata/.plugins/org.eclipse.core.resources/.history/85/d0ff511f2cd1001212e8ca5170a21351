@@ -1,0 +1,9 @@
+package aufgabe4.models;
+
+public class RemoteFork extends AbstractRemoteObject {
+
+	public RemoteFork() {
+		// TODO Auto-generated constructor stub
+	}
+
+}

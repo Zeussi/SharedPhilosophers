@@ -1,0 +1,91 @@
+package aufgabe4.models;
+
+import java.rmi.RemoteException;
+
+import aufgabe3.philosophers.Seat;
+import aufgabe4.PhilosopherWorker.PhilWorker;
+
+public class RemoteFork extends AbstractRemoteObject {
+	
+	private int rightSeatID = -1;
+	private int leftSeatID = -1;
+
+	public RemoteFork() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public RemoteFork(int objectID) {
+		super(objectID);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public RemoteSeatIF getRightSeat() {
+		if (this.rightSeatID != -1)
+			return (RemoteSeatIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(this.rightSeatID);
+		else
+			return null;
+	}
+
+	public RemoteSeatIF getLeftSeat() {
+		if (this.leftSeatID != -1)
+			return (RemoteSeatIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(this.leftSeatID);
+		else
+			return null;
+	}
+
+	public void setLeftSeat(final RemoteSeatIF leftSeat) {
+		if (this.leftSeatID != -1)
+			this.getLeftSeat().setRightForkSimple(-1);
+		
+		leftSeat.setRightForkSimple(this);
+		this.setLeftSeatSimple(leftSeat);
+	}
+	
+	public void setRightSeat(final RemoteSeatIF rightSeat) {
+		if (this.rightSeatID != -1)
+			this.getRightSeat().setLeftForkSimple(-1);
+		
+		rightSeat.setLeftForkSimple(this);
+		this.setRightSeatSimple(rightSeat);
+	}
+	
+	protected void setRightSeatSimple(final RemoteSeatIF rightSeat) {
+		try {
+			if (rightSeat != null)
+				this.rightSeatID = rightSeat.getObjectID();
+			else
+				this.rightSeatID = -1;
+		} catch (RemoteException e) {
+			PhilWorker.getPhilWorkerInstance().handleRemoteException(e, rightSeat);
+		}
+		
+		//assert(this.leftSeatID != this.rightSeatID);
+	}
+	
+	protected void setLeftSeatSimple(final RemoteSeatIF leftSeat) {
+		try {
+			if (leftSeat != null)
+				this.leftSeatID = leftSeat.getObjectID();
+			else
+				this.leftSeatID = -1;
+		} catch (RemoteException e) {
+			PhilWorker.getPhilWorkerInstance().handleRemoteException(e, leftSeat);
+		}
+		
+		//assert(this.leftSeatID != this.rightSeatID);
+	}
+
+	public boolean isTaken() {
+		return this.getRightSeat().isTaken() || this.getLeftSeat().isTaken();
+	}
+	
+	public boolean isFree() {
+		return !this.isTaken();
+	}
+
+	@Override
+	public String toString() {
+		return "Fork [rightSeat=" + this.getRightSeat().getSeatNumber() + ", leftSeat=" + this.getLeftSeat().getSeatNumber()
+				+ ", isTaken()=" + isTaken() + "]";
+	}
+}

@@ -1,0 +1,69 @@
+package aufgabe4.models;
+
+import aufgabe3.philosophers.Seat;
+import aufgabe4.PhilosopherWorker.PhilWorker;
+
+public class RemoteFork extends AbstractRemoteObject {
+	
+	private int rightSeatID = -1;
+	private int leftSeatID = -1;
+
+	public RemoteFork() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public RemoteFork(int objectID) {
+		super(objectID);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public RemoteSeatIF getRightSeat() {
+		return (RemoteSeatIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(this.rightSeatID);
+	}
+
+	public RemoteSeatIF getLeftSeat() {
+		return (RemoteSeatIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(this.leftSeatID);
+	}
+
+	public void setLeftSeat(final RemoteSeatIF leftSeat) {
+		if (this.leftSeat != -1)
+			this.leftSeat.setRightForkSimple(-1);
+		
+		leftSeat.setRightForkSimple(this);
+		this.setLeftSeatSimple(leftSeat);
+	}
+	
+	public void setRightSeat(final RemoteSeatIF rightSeat) {
+		if (this.rightSeat != -1)
+			this.rightSeat.setLeftForkSimple(-1);
+		
+		rightSeat.setLeftForkSimple(this);
+		this.setRightSeatSimple(rightSeat);
+	}
+	
+	protected void setRightSeatSimple(final Seat rightSeat) {
+		this.rightSeat = rightSeat;
+		
+		assert(this.leftSeat != this.rightSeat);
+	}
+	
+	protected void setLeftSeatSimple(final Seat leftSeat) {
+		this.leftSeat = leftSeat;
+		
+		assert(this.leftSeat != this.rightSeat);
+	}
+
+	public boolean isTaken() {
+		return this.rightSeat.isTaken() || this.leftSeat.isTaken();
+	}
+	
+	public boolean isFree() {
+		return !this.isTaken();
+	}
+
+	@Override
+	public String toString() {
+		return "Fork [rightSeat=" + rightSeat.getSeatNumber() + ", leftSeat=" + leftSeat.getSeatNumber()
+				+ ", isTaken()=" + isTaken() + "]";
+	}
+}

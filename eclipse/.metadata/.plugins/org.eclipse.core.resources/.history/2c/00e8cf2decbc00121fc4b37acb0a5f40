@@ -1,0 +1,148 @@
+package aufgabe3.philosophers;
+
+import java.util.ArrayList;
+
+public class Philosopher {
+	
+	private Seat seat;
+	private int mediationTime = 500; //ms
+	private int eatingTime = 250; //ms
+	private long timeOfLastAction = System.currentTimeMillis();
+	private int philNumber;
+	
+	public static ArrayList<Philosopher> createPhilosophers(final int number) {
+		if (number < 1) {
+			System.err.println("Cannot create " + number + " Philosophers. Trouble ahead.");
+			return null;
+		}
+		ArrayList<Philosopher> phils = new ArrayList<Philosopher>(number);
+		
+		for (int i = 0; i < number; i++) {
+			phils.add(new Philosopher(i));
+		}
+		
+		return phils;
+	}
+	
+	
+	public Philosopher() {
+		super();
+		this.philNumber = 0;
+	}
+	
+	public Philosopher(int philNumber) {
+		super();
+		this.philNumber = philNumber;
+	}
+	
+
+	public Seat removeFromSeat() {
+		final Seat oldSeat;
+		
+		synchronized(this) {
+			oldSeat = this.seat;
+			
+			if (oldSeat != null) { //we may not have a seat at this time. this may be a race condition.
+				this.seat.setPhil(null);
+				this.seat = null;
+				
+				this.timeOfLastAction = System.currentTimeMillis();
+			}
+		}
+		
+		return oldSeat;
+	}
+	
+	public boolean assignSeat(final Seat newSeat) {
+		
+		boolean success;
+		
+		/**
+		 * Actually synchronization is not necessary here since every philosopher will have its own philosopher thread (Class PhilosopherRunner).
+		 * Hence this method will only be executed from a single thread.
+		 * Synchronization would only be necessary at this point if a situation could occur where a Philosopher is seated from more than one thread simultaneously.
+		 */
+		synchronized(this) {
+			
+			if (this.seat != null) { //we are already seated. we may have entered a race condition here.
+				success = false;
+			}
+			else {
+				success = newSeat.setPhil(this);
+				
+				if (success) {
+					this.seat = newSeat;
+					this.timeOfLastAction = System.currentTimeMillis();
+				}
+			}
+		}
+		
+		return success;
+	}
+	
+	public int getMediationTime() {
+		return mediationTime;
+	}
+
+
+	public void setMediationTime(int mediationTime) {
+		this.mediationTime = mediationTime;
+	}
+
+
+	public int getEatingTime() {
+		return eatingTime;
+	}
+
+
+	public void setEatingTime(int eatingTime) {
+		this.eatingTime = eatingTime;
+	}
+	
+	public int getPhilNumber() {
+		return philNumber;
+	}
+
+	public void setPhilNumber(int philNumber) {
+		this.philNumber = philNumber;
+	}
+	
+	public boolean isEating() {
+		return this.seat != null;
+	}
+	
+	public boolean isMediating() {
+		return this.seat == null;
+	}
+	
+	/**
+	 * Have me mediated for to long?
+	 * @return
+	 */
+	public boolean isHungry() {
+		return this.isMediating() && this.getMediationTime() > System.currentTimeMillis() this.timeOfLastAction ;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isSaturated() {
+		return this.isEating() && this.timeOfLastAction > this.getEatingTime();
+	}
+	
+	public int timeSinceLastAction() {
+		return (int) (System.currentTimeMillis() - this.timeOfLastAction);
+	}
+
+
+	@Override
+	public String toString() {
+		return "Philosopher [seat=" + seat + ", mediationTime=" + mediationTime
+				+ ", eatingTime=" + eatingTime + ", philNumber=" + philNumber
+				+ ", isEating()=" + isEating() + ", isHungry()=" + isHungry()
+				+ "]";
+	}
+	
+	
+}

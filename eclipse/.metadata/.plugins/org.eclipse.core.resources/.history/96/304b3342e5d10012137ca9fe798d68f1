@@ -1,0 +1,177 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.*;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import aufgabe4.master.MasterRMIInterface;
+import aufgabe4.models.AbstractRemoteObject;
+import aufgabe4.models.AbstractRemoteObjectIF;
+
+
+/**
+ * This programm is running on every computer in the network which is working with the philosophers.
+ * 
+ * This class is a singleton.
+ *
+ */
+public class PhilWorker implements PhilWorkerRMIInterface {
+	
+	private static PhilWorker workerInstance;
+	
+	public static String masterAddress;
+	public final static String linkLocalAddress = PhilWorker.getLinkLocalNetworkInterfaceAddress();
+	
+	private RemoteObjectCache cache = new RemoteObjectCache();
+	private final Map<Integer, AbstractRemoteObject> objectsRunningOnThisWorker = new HashMap<Integer, AbstractRemoteObject>();
+
+	private PhilWorker() {	}
+	
+	public static PhilWorker getPhilWorkerInstance() {
+		if (workerInstance == null)
+			workerInstance = new PhilWorker();
+		return workerInstance;
+	}
+
+	/**
+	 * This method will set up the java RMI stuff and register itself with the master.
+	 * 
+	 * @param args the first argument must be the network address of the master in the network.
+	 */
+	public static void main(String[] args) {
+		if (args.length != 1) {
+			System.err.println("You have to specify exactly one argument and that is the network address of the master. Exiting.");
+			System.exit(-1);
+		}
+		PhilWorker.masterAddress = args[0];
+		PhilWorker worker = PhilWorker.getPhilWorkerInstance();
+		
+		Registry registry;
+		MasterRMIInterface master;
+		
+		try {
+			registry = LocateRegistry.getRegistry(PhilWorker.masterAddress);
+			//create own stub and bind it to the registry
+			PhilWorkerRMIInterface workerStub = (PhilWorkerRMIInterface) UnicastRemoteObject.exportObject(worker, 0);
+			registry.bind(linkLocalAddress, workerStub);
+			
+			//get the master and register with it
+			master = (MasterRMIInterface) registry.lookup("master");
+			master.registerWorker(linkLocalAddress);
+			
+			System.out.println("Phil worker successfully registered. Reported listening Address: " + linkLocalAddress);
+		} catch (AccessException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		} catch (AlreadyBoundException e) {
+			// this should never happen
+			e.printStackTrace();
+		}
+	}
+	
+	public static String getLinkLocalNetworkInterfaceAddress() {
+		Enumeration<NetworkInterface> interfaces = null;
+		try {
+			interfaces = NetworkInterface.getNetworkInterfaces();
+		} catch (SocketException e) {
+			System.err.println("Cannot get interfaces to get our listening address. There may be something wrong with your network configuration. Trouble Ahead.");
+			e.printStackTrace();
+		}
+		String address = null;
+		while (interfaces.hasMoreElements() && address == null) {
+			NetworkInterface interf = interfaces.nextElement();
+			try {
+				if (!interf.isLoopback() && interf.isUp()) {
+					List<InterfaceAddress> ifAddresses = interf.getInterfaceAddresses();
+					for (InterfaceAddress ifAddr : ifAddresses) {
+						if (ifAddr.getAddress().isLinkLocalAddress()) {
+							address = ifAddr.getAddress().getHostAddress();
+							break;
+						}
+					}
+				}
+			} catch (SocketException e) {
+				e.printStackTrace();
+			}
+		}
+		return address;
+	}
+	
+	/**
+	 * This method retrieves an object (remote stub) either from our cache or from the master registry
+	 * @param objID
+	 * @return
+	 */
+	public AbstractRemoteObjectIF getObjectWithID(final int objID) {
+		AbstractRemoteObjectIF obj;
+		
+		obj = this.cache.getRemoteObjectWithID(objID);
+		if (obj != null) {
+			try {
+				Registry registry = LocateRegistry.getRegistry(masterAddress);
+				obj = (AbstractRemoteObjectIF) registry.lookup(new Integer(objID).toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			if (obj != null) {
+				try {
+					cache.saveObjectToCache(obj);
+				} catch (RemoteException e) {
+					PhilWorker.getPhilWorkerInstance().handleRemoteException(e, obj);
+				}
+			}
+		}
+		
+		return obj;
+	}
+	
+	public void handleRemoteException(final RemoteException e, final AbstractRemoteObjectIF obj) {
+		//TODO: Handle the remote exception. We should tell the Master about that. This may be an indication that the objects worker is not reachable anymore.
+		
+	}
+
+	@Override
+	public boolean isReachable() {
+		return true;
+	}
+
+	@Override
+	public void addRemoteObject(AbstractRemoteObject obj) {
+		synchronized(objectsRunningOnThisWorker) {
+			objectsRunningOnThisWorker.put(obj.getObjectID(), obj);
+		}
+	}
+
+	@Override
+	public void takeRemoteObject(AbstractRemoteObject obj) {
+		synchronized(objectsRunningOnThisWorker) {
+			objectsRunningOnThisWorker.remove(obj.getObjectID());
+		}
+	}
+
+	@Override
+	public void updateCacheForObjectIDs(final Collection<Integer> objectIDs) {
+		cache.removeObjectIDsFromCache(objectIDs);
+	}
+
+}

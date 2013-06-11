@@ -1,0 +1,17 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.rmi.Remote;
+
+/**
+ * This interface is used by the master to control the worker.
+ *
+ */
+public interface PhilWorkerRMIInterface extends Remote {
+
+	/**
+	 * Will always return true. Obviously.
+	 * @return true
+	 */
+	public boolean isReachable();
+	
+}

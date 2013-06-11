@@ -1,0 +1,29 @@
+package aufgabe4.models;
+
+import java.rmi.RemoteException;
+import java.util.concurrent.ArrayBlockingQueue;
+
+import aufgabe4.PhilosopherWorker.PhilWorker;
+
+
+public interface RemoteSeatIF extends AbstractRemoteObjectIF {
+
+	public boolean canBeTaken();
+	public boolean isTaken();
+	public boolean setPhil(final RemotePhilosopherIF phil);
+	public boolean queuePhil(final RemotePhilosopherIF phil);
+	public int getNumberOfPhilosophersWaiting();
+	public boolean isPhilosopherWaitingQueueFull();
+	public RemotePhilosopherIF getNextPhilosopherWaiting();
+	public RemoteForkIF getRightFork();
+	public RemoteForkIF getLeftFork();
+	public void setRightFork(RemoteForkIF rightFork);
+	public void setLeftFork(RemoteForkIF leftFork);
+	public void setRightForkSimple(RemoteForkIF rightFork);
+	public void setLeftForkSimple(RemoteForkIF leftFork);
+	public RemotePhilosopherIF getPhil();
+	public RemoteSeatIF righthandSeat();
+	public RemoteSeatIF lefthandSeat();
+	public int getSeatNumber();
+	public void setSeatNumber(int seatNumber);
+}

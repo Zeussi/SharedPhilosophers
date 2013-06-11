@@ -1,0 +1,38 @@
+package aufgabe3.philosophers.control;
+
+import javax.management.RuntimeErrorException;
+
+public class TableMaster extends Thread {
+	
+	private static TableMaster singletonInstance;
+	
+	private PhilosopherController philController;
+	private boolean shouldRun = true;
+
+	private TableMaster(philC) {}
+	
+	public static TableMaster getInstance(final PhilosopherController philC) {
+		if (singletonInstance == null)
+			if (philC != null)
+				singletonInstance = new TableMaster(philC);
+			else
+				throw new RuntimeErrorException("The TableMaster needs a philController for initialization.");
+		return singletonInstance;
+	}
+
+	public void run() {
+		
+		while(this.isAlive() && shouldRun) {
+			
+		}
+		
+		//wait until we check next
+		try {
+			sleep(500);
+		} catch (InterruptedException e) {
+			System.err.println("This should not happen.\nBurning and dying.");
+			e.printStackTrace();
+		}
+	}
+
+}

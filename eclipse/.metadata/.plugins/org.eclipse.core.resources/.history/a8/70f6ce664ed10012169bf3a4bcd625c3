@@ -1,0 +1,6 @@
+package aufgabe4.models;
+
+
+public interface RemoteSeatIF extends AbstractRemoteObjectIF {
+
+}

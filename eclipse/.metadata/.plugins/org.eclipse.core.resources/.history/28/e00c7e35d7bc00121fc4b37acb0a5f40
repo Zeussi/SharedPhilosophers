@@ -1,0 +1,55 @@
+package aufgabe3.philosophers.control;
+
+import aufgabe3.philosophers.Philosopher;
+
+public class PhilosopherRunner extends Thread {
+	
+	private final Philosopher phil;
+	private int mediationTime = 500; //ms
+	private int eatingTime = 250; //ms
+	
+
+	public PhilosopherRunner(final Philosopher phil) {
+		super();
+		assert(phil != null);
+		
+		this.phil = phil;
+	}
+	
+	
+	public void run() {
+		long timeOfLastAction = System.currentTimeMillis();
+		
+		while (this.isAlive()) {
+			long currentTime = System.currentTimeMillis();
+			
+			//check if our philosopher should go eating or mediating
+			
+		}
+	}
+	
+
+	public Philosopher getPhil() {
+		return phil;
+	}
+
+
+	public int getMediationTime() {
+		return mediationTime;
+	}
+
+
+	public void setMediationTime(int mediationTime) {
+		this.mediationTime = mediationTime;
+	}
+
+
+	public int getEatingTime() {
+		return eatingTime;
+	}
+
+
+	public void setEatingTime(int eatingTime) {
+		this.eatingTime = eatingTime;
+	}
+}

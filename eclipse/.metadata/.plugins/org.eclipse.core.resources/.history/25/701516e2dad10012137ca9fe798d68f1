@@ -1,0 +1,17 @@
+package aufgabe4.models;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+public interface AbstractRemoteObjectIF extends Remote {
+
+	public int getObjectID() throws RemoteException;
+	
+	/**
+	 * Methods used for synchronization. 
+	 * @return true if the lock could be acquired, false if otherwise.
+	 * @throws RemoteException
+	 */
+	public boolean lock() throws RemoteException;
+	public void unlock() throws RemoteException;
+}

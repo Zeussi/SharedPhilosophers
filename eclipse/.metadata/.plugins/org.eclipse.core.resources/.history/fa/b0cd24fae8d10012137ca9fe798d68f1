@@ -1,0 +1,68 @@
+package aufgabe4.PhilosopherWorker;
+
+import aufgabe4.models.RemotePhilosopherIF;
+
+public class PhilRunner extends Thread {
+	
+	private final int philID;
+	private final PhilController philController;
+	
+	private boolean shouldRun = true;
+
+	public PhilRunner(final int philID, final PhilController philController) {
+		super();
+		assert(philID >= 0 && philController != null);
+		
+		this.philController = philController;
+		this.philID = philID;
+	}
+	
+	
+	public void run() {
+		
+		while (this.isAlive() && shouldRun) {
+			
+			RemotePhilosopherIF remotePhil = this.getPhil();
+			
+			if (this.phil.isHungry() && !this.phil.isWaitingForSeat()) { //try taking a seat on the table
+				//actually we do not care if the philosopher did get a seat or not. we will yield anyways.
+				boolean success = this.philController.seatOrQueuePhilosopher(this.phil);
+				
+				//this is false if the philosopher has been queued for a seat
+				boolean isSeated = !this.phil.isWaitingForSeat() && success;
+				
+				if (isSeated)
+					System.out.println("Philospher seated: " + this.phil);
+				else if (success && !isSeated)
+					System.out.println("Philospher queued: " + this.phil);
+				else
+					System.out.println("Philosopher not seated or queued: " + this.phil);
+			}
+			else if (this.phil.isSaturated()) { //go to the mediation room if our phil has finished eating
+				this.philController.takeSeatFromPhilosopher(this.phil);
+				System.out.println("Took seat from Philosopher: " + this.phil);
+			}
+			else { 
+				//nothing to do (yield in all cases)
+			}
+			
+			try {
+				//give the cpu a bit time
+				sleep(100);
+			} catch (InterruptedException e) {
+				// should not happen
+				e.printStackTrace();
+			}
+			//yield();
+		}
+	}
+	
+	public void killPhilosopher() {
+		this.shouldRun = false;
+	}
+	
+
+	public RemotePhilosopherIF getPhil() {
+		return PhilWorker.getPhilWorkerInstance().getObjectWithID(philID);
+	}
+}

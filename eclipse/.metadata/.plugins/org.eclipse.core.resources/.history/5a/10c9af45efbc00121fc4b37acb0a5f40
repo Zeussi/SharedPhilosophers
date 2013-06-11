@@ -1,0 +1,28 @@
+package aufgabe3.philosophers.control;
+
+public class TableMaster extends Thread {
+	
+	private final PhilosopherController philController;
+	private boolean shouldRun = true;
+
+	private TableMaster(PhilosopherController philController) {
+		super();
+		this.philController = philController;
+	}
+
+	public void run() {
+		
+		while(this.isAlive() && shouldRun) {
+			
+		}
+		
+		//wait until we check next
+		try {
+			sleep(500);
+		} catch (InterruptedException e) {
+			System.err.println("This should not happen.\nBurning and dying.");
+			e.printStackTrace();
+		}
+	}
+
+}

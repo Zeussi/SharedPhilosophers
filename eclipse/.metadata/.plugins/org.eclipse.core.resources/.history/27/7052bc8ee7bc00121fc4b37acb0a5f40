@@ -1,0 +1,127 @@
+package aufgabe3.philosophers;
+
+import java.util.ArrayList;
+
+public class Seat {
+
+	private Fork rightFork;
+	private Fork leftFork;
+	private Philosopher phil;
+	private int seatNumber;
+	
+	public static ArrayList<Seat> buildTable(final int size) {
+		if (size < 3) {
+			System.err.println("A Table should have at least 3 seats. Trouble ahead.");
+			return null;
+		}
+		ArrayList<Seat> table = new ArrayList<Seat>(size);
+		
+		
+		Seat previousSeat = new Seat(null, new Fork(), 1); //lefthand fork will be set after the loop
+		table.add(previousSeat);
+		
+		for (int i = 0; i < size-1; i++) {
+			Seat newSeat = new Seat(previousSeat.rightFork, new Fork(), i+1);
+			
+			table.add(newSeat);
+			
+			previousSeat = newSeat;
+		}
+		
+		assert(table.size() == size);
+		
+		table.get(0).setLeftFork(table.get(size-1).rightFork);
+		
+		
+		return table;
+	}
+	
+	private Seat(Fork leftFork, Fork rightFork, int number) {
+		super();
+		this.setRightFork(rightFork);
+		this.setLeftFork(leftFork);
+		this.seatNumber = number;
+	}
+
+	public boolean canBeTaken() {
+		return this.rightFork.isFree() && this.leftFork.isFree();
+	}
+	
+	public boolean isTaken() {
+		return this.phil != null;
+	}
+
+	protected boolean setPhil(final Philosopher phil) {
+		boolean success;
+		
+		synchronized(this) {
+			if (phil == null || this.phil == null) { //1st case: reset. 2nd case: this seat is not occupied and will be taken from the new philosopher
+				this.phil = phil;
+				success = true;
+			}
+			else { //this seat is already occupied. (prevent race condition)
+				success = false;
+			}
+		}
+		
+		return success;
+	}
+
+	public Fork getRightFork() {
+		return rightFork;
+	}
+	
+	public Fork getLeftFork() {
+		return leftFork;
+	}
+
+	public void setRightFork(Fork rightFork) {
+		if (this.rightFork != null)
+			this.rightFork.setLeftSeatSimple(null);
+		
+		rightFork.setLeftSeatSimple(this);
+		this.setRightForkSimple(rightFork);
+	}
+	
+	public void setLeftFork(Fork leftFork) {
+		if (this.leftFork != null)
+			this.leftFork.setRightSeatSimple(null);
+		
+		leftFork.setRightSeatSimple(this);
+		this.setLeftForkSimple(leftFork);
+	}
+
+	protected void setRightForkSimple(Fork rightFork) {
+		this.rightFork = rightFork;
+	}
+	
+	protected void setLeftForkSimple(Fork leftFork) {
+		this.leftFork = leftFork;
+	}
+	
+
+	public Philosopher getPhil() {
+		return phil;
+	}
+	
+	public Seat righthandSeat() {
+		return this.rightFork.getRightSeat();
+	}
+	
+	public Seat lefthandSeat() {
+		return this.leftFork.getLeftSeat();
+	}
+
+	public int getSeatNumber() {
+		return seatNumber;
+	}
+
+	public void setSeatNumber(int seatNumber) {
+		this.seatNumber = seatNumber;
+	}
+
+	@Override
+	public String toString() {
+		return "Seat [seatNumber=" + seatNumber + "]";
+	}
+}

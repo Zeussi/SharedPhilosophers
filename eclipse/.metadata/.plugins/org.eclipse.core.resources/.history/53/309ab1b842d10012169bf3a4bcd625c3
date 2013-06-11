@@ -1,0 +1,7 @@
+package aufgabe4.models;
+
+import java.rmi.Remote;
+
+public interface AbstractRemoteObjectIF extends Remote {
+
+}

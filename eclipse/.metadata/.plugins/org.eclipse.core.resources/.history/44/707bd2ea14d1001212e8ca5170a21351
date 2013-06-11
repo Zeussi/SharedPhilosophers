@@ -1,0 +1,7 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.rmi.Remote;
+
+public interface PhilWorkerRMIInterface extends Remote {
+
+}

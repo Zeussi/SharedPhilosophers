@@ -1,0 +1,30 @@
+package aufgabe4.master;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
+public interface MasterRMIInterface extends Remote {
+
+	/**
+	 * This methods have to be called by the PhilWorkers at the beginning / end of the "work".
+	 * 
+	 * Caution: It does not suffice to call these methods from the worker!
+	 * It has to (un)register a stub that implements PhilWorkerRMIInterface with the java RMI registry in the following manner:
+	 * registry.bind("worker_address", stub);
+	 * 
+	 * @param address Network address of the worker
+	 */
+	public void registerWorker(final String address) throws RemoteException;
+	public void unregisterWorker(final String address) throws RemoteException;
+	
+	/**
+	 * The table is represented by a list that contains objectIDs of RemoteSeat objects.
+	 * @return
+	 * @throws RemoteException
+	 */
+	public ArrayList<Integer> getTable() throws RemoteException;
+	
+	public void objectWithIDIsNotReachable(final int objID) throws RemoteException;
+	public void philosopherHasBeenKilled(final int philID) throws RemoteException;
+}

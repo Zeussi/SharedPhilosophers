@@ -1,0 +1,30 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.rmi.Remote;
+
+/**
+ * This interface is used by the master to control the worker.
+ *
+ */
+public interface PhilWorkerRMIInterface extends Remote {
+
+	/**
+	 * Will always return true. Obviously.
+	 * @return true
+	 */
+	public boolean isReachable();
+	
+	/**
+	 * This methods are used by the master to assign/remove a seat/fork/phil to/from this worker
+	 * 
+	 * @param fork/seat/phil
+	 */
+	public void addFork(final Fork fork);
+	public void addSeat(final Seat seat);
+	public void addPhil(final Philosopher phil);
+	public void takeFork(final Fork fork);
+	public void takeSeat(final Seat seat);
+	public void takePhil(final Philosopher phil);
+	
+	public void updateCacheForObjects()
+}

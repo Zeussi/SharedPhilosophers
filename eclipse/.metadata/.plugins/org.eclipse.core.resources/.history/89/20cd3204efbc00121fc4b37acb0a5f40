@@ -1,0 +1,18 @@
+package aufgabe3.philosophers.control;
+
+public class TableMaster extends Thread {
+	
+	private final PhilosopherController philController;
+	
+	
+
+	public TableMaster(PhilosopherController philController) {
+		super();
+		this.philController = philController;
+	}
+
+	public void run() {
+		
+	}
+
+}

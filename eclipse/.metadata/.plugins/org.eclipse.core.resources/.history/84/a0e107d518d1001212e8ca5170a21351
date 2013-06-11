@@ -1,0 +1,7 @@
+package aufgabe4.master;
+
+import java.rmi.Remote;
+
+public interface MasterRMIInterface extends Remote {
+
+}

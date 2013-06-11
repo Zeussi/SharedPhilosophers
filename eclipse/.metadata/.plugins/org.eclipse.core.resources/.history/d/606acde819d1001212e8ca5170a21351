@@ -1,0 +1,11 @@
+package aufgabe4.models;
+
+import java.rmi.Remote;
+
+public abstract class AbstractRemoteObject implements Remote {
+
+	public AbstractRemoteObject() {
+		// TODO Auto-generated constructor stub
+	}
+
+}

@@ -1,0 +1,28 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.util.HashMap;
+
+import aufgabe4.models.AbstractRemoteObject;
+
+public class RemoteObjectCache {
+	
+	private final HashMap<Integer, AbstractRemoteObject> cache = new HashMap<Integer, AbstractRemoteObject>();
+
+	public RemoteObjectCache() {
+		
+	}
+	
+	public AbstractRemoteObject getRemoteObjectWithID(final int objID) {
+		AbstractRemoteObject retVal;
+		synchronized(cache) {
+			retVal = cache.get(objID);
+		}
+		return retVal;
+	}
+
+	public void saveObjectToCache(final AbstractRemoteObject obj) {
+		synchronized(cache) {
+			cache.put(obj.getObjectID(), obj);
+		}
+	}
+}

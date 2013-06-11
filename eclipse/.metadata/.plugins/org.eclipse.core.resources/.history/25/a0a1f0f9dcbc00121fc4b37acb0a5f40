@@ -1,0 +1,90 @@
+package aufgabe3.philosophers;
+
+public class Philosopher extends Thread {
+	
+	private Seat seat;
+	private int mediationTime = 500; //ms
+	private int eatingTime = 250; //ms
+	private long timeOfLastAction = System.currentTimeMillis();
+
+	public Seat removeFromSeat() {
+		final Seat oldSeat;
+		
+		synchronized(this) {
+			oldSeat = this.seat;
+			
+			this.seat.setPhil(null);
+			this.seat = null;
+			
+			this.timeOfLastAction = System.currentTimeMillis();
+		}
+		
+		return oldSeat;
+	}
+	
+	public boolean assignSeat(final Seat newSeat) {
+		
+		boolean success;
+		
+		synchronized(this) {
+			//we should not be already seated
+			if (this.seat == null) {
+				success = false;
+			}
+			else {
+				newSeat.setPhil(this);
+				this.seat = newSeat;
+				success = true;
+			}
+		}
+		
+		this.timeOfLastAction = System.currentTimeMillis();
+	}
+	
+	public int getMediationTime() {
+		return mediationTime;
+	}
+
+
+	public void setMediationTime(int mediationTime) {
+		this.mediationTime = mediationTime;
+	}
+
+
+	public int getEatingTime() {
+		return eatingTime;
+	}
+
+
+	public void setEatingTime(int eatingTime) {
+		this.eatingTime = eatingTime;
+	}
+	
+	public boolean isEating() {
+		return this.seat != null;
+	}
+	
+	public boolean isMediating() {
+		return this.seat == null;
+	}
+	
+	/**
+	 * Have me mediated for to long?
+	 * @return
+	 */
+	public boolean isHungry() {
+		return this.isMediating() && this.timeOfLastAction > this.getMediationTime();
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isSaturated() {
+		return this.isEating() && this.timeOfLastAction > this.getEatingTime();
+	}
+	
+	public int timeSinceLastAction() {
+		return (int) (System.currentTimeMillis() - this.timeOfLastAction);
+	}
+}

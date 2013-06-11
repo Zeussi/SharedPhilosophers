@@ -1,0 +1,14 @@
+package aufgabe4.models;
+
+public class RemotePhilosopher extends AbstractRemoteObject implements RemotePhilosopherIF {
+
+	public RemotePhilosopher() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public RemotePhilosopher(int objectID) {
+		super(objectID);
+		// TODO Auto-generated constructor stub
+	}
+
+}

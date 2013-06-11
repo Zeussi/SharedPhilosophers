@@ -1,0 +1,90 @@
+package aufgabe4.PhilosopherWorker;
+
+import java.rmi.RemoteException;
+
+import aufgabe4.models.RemotePhilosopherIF;
+
+public class PhilRunner extends Thread {
+	
+	private final int philID;
+	private final PhilController philController;
+	
+	private boolean shouldRun = true;
+
+	public PhilRunner(final int philID, final PhilController philController) {
+		super();
+		assert(philID >= 0 && philController != null);
+		
+		this.philController = philController;
+		this.philID = philID;
+	}
+	
+	
+	public void run() {
+		
+		while (this.isAlive() && shouldRun) {
+			
+			RemotePhilosopherIF phil = this.getPhil();
+			
+			try {
+				if (phil.isHungry() && !phil.isWaitingForSeat()) { //try taking a seat on the table
+					//actually we do not care if the philosopher did get a seat or not. we will yield anyways.
+					boolean success = this.philController.seatOrQueuePhilosopher(phil);
+					
+					//this is false if the philosopher has been queued for a seat
+					boolean isSeated = !phil.isWaitingForSeat() && success;
+					
+					if (isSeated)
+						System.out.println("Philospher seated: " + phil);
+					else if (success && !isSeated)
+						System.out.println("Philospher queued: " + phil);
+					else
+						System.out.println("Philosopher not seated or queued: " + phil);
+				}
+				else if (phil.isSaturated()) { //go to the mediation room if our phil has finished eating
+					this.philController.takeSeatFromPhilosopher(phil);
+					System.out.println("Took seat from Philosopher: " + phil);
+				}
+				else { 
+					//nothing to do (yield in all cases)
+				}
+			} catch (Exception e) {
+				// TODO: handle exception. Problem: if we post the exception to the PhilRunner, the loop will run again and we post the exception multiple times. Maybe we should die here.
+			}
+			
+			try {
+				//give the cpu a bit time
+				sleep(100);
+			} catch (InterruptedException e) {
+				// should not happen
+				e.printStackTrace();
+			}
+			//yield();
+		}
+		
+		try {
+			this.cleanup();
+		}
+		catch(Exception e) {
+			System.err.println("PhilRunner could not cleanup.");
+			e.printStackTrace();
+		}
+	}
+	
+	public void killPhilosopher() {
+		this.shouldRun = false;
+	}
+	
+	private void cleanup() throws RemoteException {
+		RemotePhilosopherIF phil = this.getPhil();
+		if (phil.isEating())
+			phil.removeFromSeat();
+	}
+
+	public RemotePhilosopherIF getPhil() {
+		if (this.philID != -1)
+			return (RemotePhilosopherIF) PhilWorker.getPhilWorkerInstance().getObjectWithID(philID);
+		else
+			return null;
+	}
+}

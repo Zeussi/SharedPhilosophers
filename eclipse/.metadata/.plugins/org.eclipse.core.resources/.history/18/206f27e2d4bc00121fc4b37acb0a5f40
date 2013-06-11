@@ -1,0 +1,12 @@
+package aufgabe3.philosophers;
+
+public class Fork {
+	
+	private Seat rightSeat;
+	private Seat leftSeat;
+
+	
+	public boolean isTaken() {
+		return this.rightSeat.isTaken() ||Êthis.leftSeat.isTaken();
+	}
+}
