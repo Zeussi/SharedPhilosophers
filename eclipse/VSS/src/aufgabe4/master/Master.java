@@ -15,12 +15,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeSet;
 
 import aufgabe4.PhilosopherWorker.PhilWorkerRMIInterface;
 
@@ -127,9 +125,18 @@ public class Master implements MasterRMIInterface {
 		AbstractRemoteObject obj3 = new RemotePhilosopher();
 		AbstractRemoteObject obja = new RemotePhilosopher();
 		AbstractRemoteObject objb = new RemotePhilosopher();
+		AbstractRemoteObject objc = new RemoteFork();
+		AbstractRemoteObject obje = new RemoteFork();
+		AbstractRemoteObject objf = new RemoteFork();
+		AbstractRemoteObject objd = new RemoteSeat(objc.getObjectID(), obje.getObjectID(), 2);
+		
 		
 		undistributedObjects.add(obja);
 		undistributedObjects.add(objb);
+		undistributedObjects.add(objc);
+		undistributedObjects.add(objd);
+		undistributedObjects.add(obje);
+		undistributedObjects.add(objf);
 		distributedObjects.put(obj1,"blub1");
 		distributedObjects.put(obj2,"blub1");
 		distributedObjects.put(obj3,"blub3");
@@ -141,12 +148,78 @@ public class Master implements MasterRMIInterface {
 		workerAddresses.add("blub5");
 		// TEST DATA END - REMOVE IN RELEASE MODE
 			
-		
-		if(undistributedObjects.size() > 0)
+		// distribute objects if new objects are available
+		while(undistributedObjects.size() > 0)
 		{
-			ArrayList<String> lessBusyWorker = getLessBusyWorker(undistributedObjects.size());
-			System.out.println("Less busy worker (" + undistributedObjects.size() + "): "+ lessBusyWorker);
+			String lessBusyWorker;
+			
+			// checking, if seat fork pairs are available, because they will be distributed to the same worker
+			ArrayList<AbstractRemoteObject> seatForkPair = getSmallestSeatForkPair();
+			while(seatForkPair != null)
+			{
+				lessBusyWorker = getLessBusyWorker(1).get(0);
+				//System.out.println("Less busy worker (" + undistributedObjects.size() + "): "+ lessBusyWorker);
+				
+				distributeObjectsToWorkers(seatForkPair, lessBusyWorker);
+				
+				seatForkPair = getSmallestSeatForkPair();
+			}
+			
+			// if no seat fork pairs are available anymore, the rest will be distributed in single way to less busy worker
+			Iterator<AbstractRemoteObject> undistributedObjectsIterator = undistributedObjects.iterator();
+			while(undistributedObjectsIterator.hasNext())
+			{
+				lessBusyWorker = getLessBusyWorker(1).get(0);
+				distributeObjectsToWorkers(undistributedObjectsIterator.next(), lessBusyWorker);
+			}
 		}
+	}
+	
+	/**
+	 * Smallest seat-fork-pair is a seat with its left fork.
+	 * If this combination is available
+	 */
+	private ArrayList<AbstractRemoteObject> getSmallestSeatForkPair()
+	{
+		ArrayList<AbstractRemoteObject> seatForkPair = null;
+		Iterator<AbstractRemoteObject> undistributedObjectsIteratorForSeatSearch = undistributedObjects.iterator();
+		Iterator<AbstractRemoteObject> undistributedObjectsIteratorForForkSearch = undistributedObjects.iterator();
+		AbstractRemoteObject actualObjectSeat;
+		AbstractRemoteObject actualObjectFork;
+		boolean seatForkPairFound = false;
+		
+		// searching for seats
+		while(undistributedObjectsIteratorForSeatSearch.hasNext()  && !seatForkPairFound)
+		{
+			actualObjectSeat = undistributedObjectsIteratorForSeatSearch.next();
+			try
+			{
+				// if a seat is found ...
+				if(actualObjectSeat.getObjectType() == RemoteObjectType.SEAT)
+				{
+					// ... find the left fork for the seat
+					while(undistributedObjectsIteratorForForkSearch.hasNext() && !seatForkPairFound)
+					{
+						actualObjectFork = undistributedObjectsIteratorForForkSearch.next();
+						// if object is a fork ...
+						if(actualObjectFork.getObjectType() == RemoteObjectType.FORK
+								&&  actualObjectFork.getObjectID() == getObjectWithID(((RemoteSeat) actualObjectSeat).getLeftForkID()).getObjectID()
+						)
+						{
+							seatForkPair = new ArrayList<AbstractRemoteObject>();
+							seatForkPair.add(actualObjectFork);
+							seatForkPair.add(actualObjectSeat);
+							seatForkPairFound = true;
+						}
+					}
+				}
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+		
+		return seatForkPair;
 	}
 	
 	/**
@@ -180,6 +253,10 @@ public class Master implements MasterRMIInterface {
 		return lessBusyWorker;
 	}
 	
+	/**
+	 * Returns the number of objects which each worker has actually running.
+	 * @return A list of worker-address and the amount of objects running on it.
+	 */
 	public HashMap<String, Integer> getNumberOfObjectsByWorker()
 	{
 		HashMap<String, Integer> numberOfObjectsByWorker = new HashMap<String, Integer>();
@@ -259,6 +336,18 @@ public class Master implements MasterRMIInterface {
 	    return sortedMap;
 	}
 	
+	public void distributeObjectsToWorkers(final Collection<AbstractRemoteObject> objects, String workerAddress)
+	{
+		// TODO
+		// TODO: do remote objects from undistributedObjects Set as soon as they have been distributed on a worker
+	}
+	
+	public void distributeObjectsToWorkers(final AbstractRemoteObject object, String workerAddress)
+	{
+		// TODO
+		// TODO: do remote objects from undistributedObjects Set as soon as they have been distributed on a worker
+	}
+	
 	/**
 	 * This method goes through all workers and checks their reachability
 	 */
@@ -304,14 +393,9 @@ public class Master implements MasterRMIInterface {
 		}
 		this.removeRemoteObjects(address, objects);
 		this.unregisterWorker(address);
-		this.distributeObjectsToWorkers(objects);
+		this.distributeObjectsToWorkers(objects, getLessBusyWorker(1).get(0));
 	}
-	
-	public void distributeObjectsToWorkers(final Collection<AbstractRemoteObject> objects) {
-		// TODO
-		// TODO: do remote objects from undistributedObjects Set as soon as they have been distributed on a worker
-	}
-	
+
 	public void start(final int tableSize, final int numberOfPhils) {
 		// TODO: Create objects
 		// TODO: build this.table array (object IDs of seat objects)
