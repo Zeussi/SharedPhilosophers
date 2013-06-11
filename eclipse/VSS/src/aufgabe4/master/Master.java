@@ -144,20 +144,40 @@ public class Master implements MasterRMIInterface {
 		
 		if(undistributedObjects.size() > 0)
 		{
-			getBestWorker(undistributedObjects.size());
+			ArrayList<String> lessBusyWorker = getLessBusyWorker(undistributedObjects.size());
+			System.out.println("Less busy worker (" + undistributedObjects.size() + "): "+ lessBusyWorker);
 		}
 	}
 	
-	public void getBestWorker(final int numberOfObjects)
+	/**
+	 * Call the less busy workers. Be careful, always ask just 1 worker (!).
+	 * If you ask more than one, you don`t know if the larger one are "full".
+	 * 
+	 * @param numberOfWorkerNeeded The amount of worker to call. Just call 1 (!).
+	 * @return The worker-address of the less busy worker.
+	 */
+	public ArrayList<String> getLessBusyWorker(final int numberOfWorkerNeeded)
 	{
 		//ArrayList<String> workerBalanace = getWorkerBalance();
 		HashMap<String, Integer> numberOfObjectsByWorker = getNumberOfObjectsByWorker();
-		System.out.println("Number of objects by worker: " + numberOfObjectsByWorker);
 		
+		// sorting the workers by the amount of objects
+		HashMap<String, Integer> sortedNumberOfObjectsByWorker = sortHashMapByValuesD(numberOfObjectsByWorker);
 		
-		// convert
-		HashMap<String, Integer> sortedNumberOfObjectsByWorker = sortHashMap(numberOfObjectsByWorker);
-		System.out.println("Sorted: " + sortedNumberOfObjectsByWorker);
+		// get less busy worker(s)
+		ArrayList<String> lessBusyWorker = new ArrayList<String>();
+		Set<String> keys = sortedNumberOfObjectsByWorker.keySet();
+		int counter = 0;
+		
+		for(String key : keys)
+		{
+			if(counter == numberOfWorkerNeeded)
+				break;
+			lessBusyWorker.add(key);
+			counter++;
+		}
+		
+		return lessBusyWorker;
 	}
 	
 	public HashMap<String, Integer> getNumberOfObjectsByWorker()
@@ -181,6 +201,7 @@ public class Master implements MasterRMIInterface {
 		return numberOfObjectsByWorker;
 	}
 	
+	/* Works, but ignores duplicate 
 	private HashMap<String, Integer> sortHashMap(HashMap<String, Integer> input)
 	{
 	    Map<String, Integer> tempMap = new HashMap<String, Integer>();
@@ -196,6 +217,44 @@ public class Master implements MasterRMIInterface {
 	    for (int i=0; i<size; i++){
 	        sortedMap.put(mapKeys.get(mapValues.indexOf(sortedArray[i])), 
 	                      (Integer)sortedArray[i]);
+	    }
+	    return sortedMap;
+	}*/
+	
+	/**
+	 * Sorts a HashMap by values. From small to large values. Duplicate values are all counted.
+	 * @param passedMap The unsorted map.
+	 * @return The sorted map from small to large with duplicate values.
+	 */
+	public LinkedHashMap<String, Integer> sortHashMapByValuesD(HashMap<String, Integer> passedMap)
+	{
+	    List<String> mapKeys = new ArrayList<String>(passedMap.keySet());
+	    List<Integer> mapValues = new ArrayList<Integer>(passedMap.values());
+	    Collections.sort(mapValues);
+	    Collections.sort(mapKeys);
+	        
+	    LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+	    
+	    Iterator<Integer> valueIt = mapValues.iterator();
+	    while (valueIt.hasNext())
+	    {
+	        Object val = valueIt.next();
+	        Iterator<String> keyIt = mapKeys.iterator();
+	        
+	        while (keyIt.hasNext())
+	        {
+	            Object key = keyIt.next();
+	            String comp1 = passedMap.get(key).toString();
+	            String comp2 = val.toString();
+	            
+	            if (comp1.equals(comp2))
+	            {
+	                passedMap.remove(key);
+	                mapKeys.remove(key);
+	                sortedMap.put((String)key, (Integer)val);
+	                break;
+	            }
+	        }
 	    }
 	    return sortedMap;
 	}
