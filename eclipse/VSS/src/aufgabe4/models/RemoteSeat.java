@@ -167,11 +167,11 @@ public class RemoteSeat extends AbstractRemoteObject implements RemoteSeatIF {
 	}
 	
 	public int getRightForkID() {
-		return this.getRightForkID();
+		return this.rightForkID;
 	}
 	
 	public int getLeftForkID() {
-		return this.getLeftForkID();
+		return this.leftForkID;
 	}
 	
 	public void setLeftForkID(final int objID) {
