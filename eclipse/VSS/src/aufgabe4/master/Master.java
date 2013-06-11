@@ -2,6 +2,7 @@ package aufgabe4.master;
 
 import java.rmi.AlreadyBoundException;
 import aufgabe4.models.*;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -41,7 +44,7 @@ public class Master implements MasterRMIInterface {
 	 * key: AbstractRemoteObject: fork/seat/phil
 	 * value: worker address
 	 */
-	private final HashMap<AbstractRemoteObject, String> allObjects = new HashMap<AbstractRemoteObject, String>();
+	private final HashMap<AbstractRemoteObject, String> distributedObjects = new HashMap<AbstractRemoteObject, String>();
 	private final Set<AbstractRemoteObject> undistributedObjects = new HashSet<AbstractRemoteObject>();
 	// The table is represented by a list that contains objectIDs of RemoteSeat objects.
 	private ArrayList<Integer> table;
@@ -86,16 +89,86 @@ public class Master implements MasterRMIInterface {
 			e.printStackTrace();
 		}
 		
-		//schedule the reachability check every 2 minutes
-		Timer timer = new Timer();
-		timer.schedule(new TimerTask() {
+		//schedule the reachability check every 1 minute
+		Timer timerCheckWorker = new Timer();
+		timerCheckWorker.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				master.checkWorkers();
 			}
-		}, 1*60*1000);
+		}, 1*60*1000, 1*60*1000); // in ms - first parameter is the first timer call, second is the period timer
 		
+		//schedule the not distributed objects check every 5 seconds
+		Timer timerCheckNotDistributedObjects = new Timer();
+		timerCheckNotDistributedObjects.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				master.updateObjectDistribution();
+			}
+		}, 10*1000, 5*1000); // in ms - first parameter is the first timer call, second is the period timer
 	}
+	
+	/**
+	 * 
+	 */
+	public void updateObjectDistribution()
+	{
+		// distributeObjectsToWorkers(final Collection<AbstractRemoteObject> objects)
+		
+		// TEST DATA START - REMOVE IN RELEASE MODE
+		AbstractRemoteObject obj1 = new RemotePhilosopher();
+		AbstractRemoteObject obj2 = new RemotePhilosopher();
+		AbstractRemoteObject obj3 = new RemotePhilosopher();
+		AbstractRemoteObject obja = new RemotePhilosopher();
+		AbstractRemoteObject objb = new RemotePhilosopher();
+		
+		undistributedObjects.add(obja);
+		undistributedObjects.add(objb);
+		distributedObjects.put(obj1,"blub1");
+		distributedObjects.put(obj2,"blub1");
+		distributedObjects.put(obj3,"blub3");
+		
+		workerAddresses.add("blub1");
+		workerAddresses.add("blub2");
+		workerAddresses.add("blub3");
+		workerAddresses.add("blub4");
+		workerAddresses.add("blub5");
+		// TEST DATA END - REMOVE IN RELEASE MODE
+			
+		
+		if(undistributedObjects.size() > 0)
+		{
+			getBestWorker(undistributedObjects.size());
+		}
+	}
+	
+	public void getBestWorker(final int numberOfObjects)
+	{
+		//ArrayList<String> workerBalanace = getWorkerBalance();
+		getWorkerBalance();
+	}
+	
+	public void getWorkerBalance()
+	{
+		HashMap<String, Integer> numberOfObjectsByWorker = new HashMap<String, Integer>();
+		
+		// initialize every worker with 0 distributed objects
+		for(int i = 0; i < workerAddresses.size(); i++)
+			numberOfObjectsByWorker.put(workerAddresses.get(i), 0);
+		
+		// run through all objects, identify on which worker the object runs and count the objects of every worker
+		Iterator<Entry<AbstractRemoteObject, String>> distributedObjectsIterator = distributedObjects.entrySet().iterator();
+		while(distributedObjectsIterator.hasNext())
+		{
+		    String actualWorkerAddress = distributedObjectsIterator.next().getValue();
+
+		    int actualObjectCounter = numberOfObjectsByWorker.get(actualWorkerAddress);
+		    numberOfObjectsByWorker.put(actualWorkerAddress, ++actualObjectCounter);
+		}
+		
+		System.out.println(numberOfObjectsByWorker);
+	}
+	
 	
 	/**
 	 * This method goes through all workers and checks their reachability
@@ -219,10 +292,10 @@ public class Master implements MasterRMIInterface {
 
 	public Collection<AbstractRemoteObject> getObjectsForWorkerWithAddress(final String address) {
 		Collection<AbstractRemoteObject> retVal = new HashSet<AbstractRemoteObject>();
-		synchronized(this.allObjects) {
-			Set<AbstractRemoteObject> objects = this.allObjects.keySet();
+		synchronized(this.distributedObjects) {
+			Set<AbstractRemoteObject> objects = this.distributedObjects.keySet();
 			for (AbstractRemoteObject currentObject : objects) {
-				String currentAddress = this.allObjects.get(currentObject);
+				String currentAddress = this.distributedObjects.get(currentObject);
 				if (currentAddress.equalsIgnoreCase(address)) {
 					retVal.add(currentObject);
 				}
@@ -233,8 +306,8 @@ public class Master implements MasterRMIInterface {
 	
 	public AbstractRemoteObject getObjectWithID(final int objID) {
 		AbstractRemoteObject retVal = null;
-		synchronized(allObjects) {
-			Set<AbstractRemoteObject> objects = allObjects.keySet();
+		synchronized(distributedObjects) {
+			Set<AbstractRemoteObject> objects = distributedObjects.keySet();
 			for (AbstractRemoteObject obj : objects) {
 				if (obj.getObjectID() == objID) {
 					retVal = obj;
@@ -257,11 +330,11 @@ public class Master implements MasterRMIInterface {
 	
 	public String getWorkerAddressForObjectWithID(final int objID) {
 		String retVal = null;
-		synchronized(this.allObjects) {
-			Set<AbstractRemoteObject> objects = this.allObjects.keySet();
+		synchronized(this.distributedObjects) {
+			Set<AbstractRemoteObject> objects = this.distributedObjects.keySet();
 			for (AbstractRemoteObject currentObject : objects) {
 				if (currentObject.getObjectID() == objID) {
-					retVal = this.allObjects.get(currentObject);
+					retVal = this.distributedObjects.get(currentObject);
 					break;
 				}
 			}
@@ -285,11 +358,11 @@ public class Master implements MasterRMIInterface {
 	 */
 	public void addRemoteObjects(final String address, final Collection<AbstractRemoteObject> objects) {
 		PhilWorkerRMIInterface workerStub = this.getWorkerWithAddress(address);
-		synchronized(this.allObjects) {
+		synchronized(this.distributedObjects) {
 			for (final AbstractRemoteObject obj : objects) {
 				try {
 					workerStub.addRemoteObject(obj);
-					this.allObjects.put(obj, address);
+					this.distributedObjects.put(obj, address);
 				} catch (RemoteException e) {
 					System.err.println("Could not add object to worker. This worker may not be reachable anymore.");
 					e.printStackTrace();
@@ -306,10 +379,10 @@ public class Master implements MasterRMIInterface {
 	public void removeRemoteObjects(final String address, final Collection<AbstractRemoteObject> objects) {
 		PhilWorkerRMIInterface workerStub = this.getWorkerWithAddress(address);
 		assert(workerStub != null); //if this fails, maybe the worker is not registered anymore (unregisterWorker() has already been called)
-		synchronized(this.allObjects) {
+		synchronized(this.distributedObjects) {
 			for (final AbstractRemoteObject obj : objects) {
 				try {
-					this.allObjects.remove(obj);
+					this.distributedObjects.remove(obj);
 					workerStub.takeRemoteObjectWithID(obj.getObjectID());
 				} catch (RemoteException e) {
 					//try to unbind the object at least from the registry hence it is not accessible by others
