@@ -9,13 +9,19 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeSet;
+
 import aufgabe4.PhilosopherWorker.PhilWorkerRMIInterface;
 
 /**
@@ -145,10 +151,16 @@ public class Master implements MasterRMIInterface {
 	public void getBestWorker(final int numberOfObjects)
 	{
 		//ArrayList<String> workerBalanace = getWorkerBalance();
-		getWorkerBalance();
+		HashMap<String, Integer> numberOfObjectsByWorker = getNumberOfObjectsByWorker();
+		System.out.println("Number of objects by worker: " + numberOfObjectsByWorker);
+		
+		
+		// convert
+		HashMap<String, Integer> sortedNumberOfObjectsByWorker = sortHashMap(numberOfObjectsByWorker);
+		System.out.println("Sorted: " + sortedNumberOfObjectsByWorker);
 	}
 	
-	public void getWorkerBalance()
+	public HashMap<String, Integer> getNumberOfObjectsByWorker()
 	{
 		HashMap<String, Integer> numberOfObjectsByWorker = new HashMap<String, Integer>();
 		
@@ -166,9 +178,27 @@ public class Master implements MasterRMIInterface {
 		    numberOfObjectsByWorker.put(actualWorkerAddress, ++actualObjectCounter);
 		}
 		
-		System.out.println(numberOfObjectsByWorker);
+		return numberOfObjectsByWorker;
 	}
 	
+	private HashMap<String, Integer> sortHashMap(HashMap<String, Integer> input)
+	{
+	    Map<String, Integer> tempMap = new HashMap<String, Integer>();
+	    for(String wsState : input.keySet())
+	        tempMap.put(wsState,input.get(wsState));
+
+	    List<String> mapKeys = new ArrayList<String>(tempMap.keySet());
+	    List<Integer> mapValues = new ArrayList<Integer>(tempMap.values());
+	    HashMap<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+	    TreeSet<Integer> sortedSet = new TreeSet<Integer>(mapValues);
+	    Object[] sortedArray = sortedSet.toArray();
+	    int size = sortedArray.length;
+	    for (int i=0; i<size; i++){
+	        sortedMap.put(mapKeys.get(mapValues.indexOf(sortedArray[i])), 
+	                      (Integer)sortedArray[i]);
+	    }
+	    return sortedMap;
+	}
 	
 	/**
 	 * This method goes through all workers and checks their reachability
